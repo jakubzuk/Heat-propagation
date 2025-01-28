@@ -2,6 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import csv
 
+# Temperatury w Jekaterynburgu
+# warm: 17.04.2024
+# cold: 27.02.2024
+# colder: 17.02.2024
+
 ht = 0.5
 hx = 0.5
 
@@ -117,12 +122,19 @@ class Window:
         self.cords = cords
 
 class Heater:
-    def __init__(self, room, cords):#, power, max_temperature):
+    def __init__(self, room, cords, mode = 3):#, power, max_temperature):
         self.room = room
         self.cords = cords
         # self.power = power
-        # self.max_temperature = max_temperature
+        self.mode = mode
+        self.modes_temperatures = [7, 12, 15, 19, 23, 28]
+        self.max_temperature = self.modes_temperatures[mode]
         # self.heat = self.power / (air_density * spec_heat * 0.25) # Uzupełnić
+
+    def set_mode(self, new_mode):
+        if new_mode in [0, 1, 2, 3, 4, 5]:
+            self.mode = new_mode 
+            self.max_temperature = self.modes_temperatures[self.mode]   
     
 
 class Door:
@@ -133,13 +145,15 @@ class Door:
         self.cords_2 = cords_2
 
 class House:
-    def __init__(self, initial_temperature, outside_temperature, heaters_mode):
+    def __init__(self, initial_temperature, outside_temperatures, heaters_mode, heaters_during_work = 3):
         self.windows = []
         self.heaters = []
         self.initial_temperature = initial_temperature
         self.times = np.arange(0, 86400, ht) 
         # self.times = np.arange(0, 10000, ht)
-        self.outside_temperature = outside_temperature
+        self.temperatures = outside_temperatures
+        self.heaters_during_work_mode = heaters_during_work
+        self.outside_temp_num = 0
         self.energy_used = 0
 
         room_1 = Room(25, 20, self.times, self.initial_temperature)
@@ -160,7 +174,7 @@ class House:
             heater_1_2 = Heater(room_1, [459, 460, 461, 462])
             heater_1_3 = Heater(room_1, [466, 467])
             heater_2_1 = Heater(room_2, [274, 275, 276])
-            heater_2_2 = Heater(room_2, [73, 88, 103])
+            heater_2_2 = Heater(room_2, [73, 88, 103, 118])
             heater_3_1 = Heater(room_3, [61, 62, 63, 64, 65])
 
         elif heaters_mode == 'far':
@@ -173,6 +187,18 @@ class House:
 
         self.heaters = [heater_1_1, heater_1_2, heater_1_3, heater_2_1, heater_2_2, heater_3_1]
 
+        if outside_temperatures[0] < 0:
+            for heater in self.heaters:
+                heater.set_mode(4)
+
+        if outside_temperatures[0] < -10:
+            old_russian_heater_1 = Heater(room_1, [119, 120])
+            old_russian_heater_2 = Heater(room_2, [238, 253])
+            self.heaters.append(old_russian_heater_1)
+            self.heaters.append(old_russian_heater_2)
+            for heater in self.heaters:
+                heater.set_mode(5)
+
         door_1 = Door(room_1, room_2, [399, 424], [240, 225]) 
         door_2 = Door(room_1, room_3, [3, 4], [363, 364])
         door_3 = Door(room_2, room_3, [6, 7], [391, 392])
@@ -181,16 +207,24 @@ class House:
 
 
     def main(self):
+        checking_temp = True
         for t in range(1, len(self.times)):   
             for room in self.rooms:
                 # room.t += 1
                 room.step()
-
+    
             for window in self.windows:
-                window.room.u[t, window.cords] = self.outside_temperature
+                window.room.u[t, window.cords] = self.temperatures[self.outside_temp_num]
+
+            if t % 7200 == 0:
+                    self.outside_temp_num += 1
 
             for heater in self.heaters:
-                if heater.room.average_temperature() <= 22: # Do wymiany
+                if t == 50400:
+                    heater.set_mode(self.heaters_during_work_mode)
+                elif t == 122400:
+                    heater.set_mode(3)
+                if heater.room.average_temperature() <= heater.max_temperature: # Do wymiany
                     heater.room.u[t, heater.cords] += ht * heat
                     self.energy_used += len(heater.cords) * heat
                 # heater.room.u[t, heater.cords] = 10000
@@ -210,6 +244,22 @@ class House:
                 # room.u[t, room.N - 1] = 10000
                 # room.u[t, room.N * (room.M - 1)] = 10000
                 # room.u[t, room.N * room.M - 1] = 10000
+            if t == 50400:
+                sum_of_temp = 0
+                for room in self.rooms:
+                    sum_of_temp += np.sum(room.u[t, :])
+                    avg = sum_of_temp / 1200
+            if t > 122400 and checking_temp == True:
+                sum_of_temp = 0
+                for room in self.rooms:
+                    sum_of_temp += np.sum(room.u[t, :])
+                avg = sum_of_temp / 1200
+                if t == 160000:
+                    pass
+                if avg > 19:
+                    print(t - 122400)
+                    checking_temp = False
+                    # self.show_house_at_time(int(t / 2))
 
 
     # def show_house(self):
@@ -224,6 +274,22 @@ class House:
         plt.xlabel("x")
         plt.ylabel("y")
         plt.title("Rozkład temperatury w całym mieszkaniu")
+        plt.show()
+
+    def show_house_at_time(self, time):
+        time_idx = int(time / ht)  # Przeliczenie czasu na indeks w tablicy danych
+
+        for room in self.rooms:
+            room.t = time_idx  # Ustawienie kroku czasowego dla każdego pokoju
+
+        full_map = self.merge_rooms()  # Połączenie map temperatur z poszczególnych pokoi
+
+        plt.figure(figsize=(8, 6))
+        plt.pcolormesh(full_map, shading='auto', cmap='inferno')
+        plt.colorbar(label="Temperatura [°C]")
+        plt.xlabel("x")
+        plt.ylabel("y")
+        plt.title(f"Rozkład temperatury w całym mieszkaniu (t = {time / 3600} h)")
         plt.show()
 
     def merge_rooms(self):
@@ -244,15 +310,15 @@ class House:
 
         return result
     
-    def plot_hourly_snapshots(self):
+    def plot_all_day(self):
         fig, axes = plt.subplots(4, 6, figsize=(18, 12))  
         axes = axes.flatten()  
 
         time_indices = [int(hour * 3600 / ht) for hour in range(24)]  
 
-        for i, time_idx in enumerate(time_indices):
+        for i, time_index in enumerate(time_indices):
             for room in self.rooms:
-                room.t = time_idx  
+                room.t = time_index  
             
             full_map = self.merge_rooms()
             im = axes[i].pcolormesh(full_map, shading='auto', cmap='plasma')
@@ -261,8 +327,6 @@ class House:
         fig.colorbar(im, ax=axes, orientation='horizontal', fraction=0.02, pad=0.05)
         plt.tight_layout()
         plt.show()
-
-
 
 
     # def merge_rooms(self):
@@ -279,10 +343,26 @@ class House:
 
     #     return result
 
-house = House(0, 0, 'far')
+with open("data.csv", 'r') as file:
+    temp_csv_reader = csv.DictReader(file)
+    warm = []
+    cold = []
+    colder = []
+    for col in temp_csv_reader:
+        warm.append(int(col['warm']))
+        cold.append(int(col['cold']))
+        colder.append(int(col['colder']))
+
+house = House(0, warm, 'close', 0)
 house.main()
 # house.show_house()
-house.plot_hourly_snapshots()
+house.plot_all_day()
+
+# house.show_house_at_time(2)
+# house.show_house_at_time(3600 * 7)
+# house.show_house_at_time(3600 * 10)
+# house.show_house_at_time(3600 * 14)
+# house.show_house_at_time(3600 * 17)
 
 import matplotlib.animation as animation
 
@@ -301,7 +381,7 @@ def animate_house(house):
         heatmap.set_array(full_map.ravel())
         ax.set_title(f"Rozkład temperatury - krok {frame}")
 
-    ani = animation.FuncAnimation(fig, update, frames=len(house.times), interval=10, repeat=False)
+    ani = animation.FuncAnimation(fig, update, frames=len(house.times), interval=0.02, repeat=False)
     plt.show()
 
-# animate_house(house)
+animate_house(house)
