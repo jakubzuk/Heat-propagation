@@ -1,0 +1,1 @@
+heaters_during_work = 3
