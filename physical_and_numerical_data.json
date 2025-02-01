@@ -1,0 +1,8 @@
+{
+    "ht": 0.5,
+    "hx": 0.5,
+    "air_density": 1.2,
+    "spec_heat": 1005,
+    "power": 1200,
+    "diff_coeff": 0.025
+}
