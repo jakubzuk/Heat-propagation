@@ -1,7 +1,7 @@
 # Heat-propagation 
 
 ## Opis projektu  
-Projekt Heat-propagation to symulacja rozchodzenia się ciepła w mieszkaniu przy założeniu spełniania równania dyfuzji wykorzystująca bibliotekę **NumPy** oraz **Matplotlib**.  Kod pozwala na wizualizację oraz analizę ilościową i jakościową rozkładu temperatur w różnych warunkach. 
+Projekt **Heat-propagation** to symulacja rozchodzenia się ciepła w mieszkaniu przy założeniu spełniania równania dyfuzji wykorzystująca bibliotekę **NumPy** oraz **Matplotlib**.  Kod pozwala na wizualizację oraz analizę ilościową i jakościową rozkładu temperatur w różnych warunkach. 
 
 ## Struktura projektu  
 - **`Równanie ciepła.pdf`** – Raport zawierający opis poruszanych problemów
