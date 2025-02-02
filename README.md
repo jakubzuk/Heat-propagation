@@ -28,4 +28,4 @@ pip install -r requirements.txt
 Animacje ilustrujące rozchodzenie się ciepła w czasie zostały zaimplementowane w projekcie, jednak nie znalazły się w pliku pdf. W celu zobaczenia animacji należy uruchomić plik **`run_animations.py`** i wpisać pożądane parametry (dokładny opis w pliku).
 
 ![](warm_0.gif)
-![](warm_after.gif)
+![](warm_0_after.gif)
