@@ -106,7 +106,7 @@ class Window:
         self.cords = cords
 
 class Heater:
-    def __init__(self, room, cords, mode=5):
+    def __init__(self, room, cords, mode=3):
         self.room = room
         self.cords = cords 
         self.mode = mode
@@ -145,7 +145,7 @@ class Door:
         self.cords_2 = cords_2
 
 class House:
-    def __init__(self, initial_temperature, outside_temperatures, heaters_mode, heaters_during_work = 3):
+    def __init__(self, initial_temperature, outside_temperatures, heaters_mode, heaters_during_work = 3, initial_mode = 3):
         self.windows = []
         self.heaters = []
         self.initial_temperature = initial_temperature
@@ -156,6 +156,7 @@ class House:
         self.outside_temp_num = 0
         self.energy_used = []
         self.average_temperatures = []
+        self.default_heater_mode = initial_mode
 
         room_1 = Room(25, 20, self.times, self.initial_temperature)
         room_2 = Room(15, 20, self.times, self.initial_temperature)
@@ -172,40 +173,35 @@ class House:
         self.windows = [window_1_1, window_1_2, window_1_3, window_2_1, window_2_2, window_2_3, window_3_1]
 
         if heaters_mode == 'close':
-            heater_1_1 = Heater(room_1, [301, 326, 351])
-            heater_1_2 = Heater(room_1, [459, 460, 461])
-            heater_1_3 = Heater(room_1, [468, 469])
-            heater_2_1 = Heater(room_2, [275, 276])
-            heater_2_2 = Heater(room_2, [88, 103, 118, 133])
-            heater_2_3 = Heater(room_2, [238, 253, 268])
-            heater_3_1 = Heater(room_3, [61, 62, 63, 64, 65])
+            heater_1_1 = Heater(room_1, [301, 326, 351], self.default_heater_mode)
+            heater_1_2 = Heater(room_1, [459, 460, 461], self.default_heater_mode)
+            heater_1_3 = Heater(room_1, [468, 469], self.default_heater_mode)
+            heater_2_1 = Heater(room_2, [275, 276], self.default_heater_mode)
+            heater_2_2 = Heater(room_2, [88, 103, 118, 133], self.default_heater_mode)
+            heater_2_3 = Heater(room_2, [238, 253, 268], self.default_heater_mode)
+            heater_3_1 = Heater(room_3, [61, 62, 63, 64, 65], self.default_heater_mode)
             self.heaters = [heater_1_1, heater_1_2, heater_1_3, heater_2_1, heater_2_2, heater_2_3, heater_3_1]
 
         elif heaters_mode == 'far':
-            heater_1_1 = Heater(room_1, [323, 348])
-            heater_1_2 = Heater(room_1, [48, 73, 98])
-            heater_1_3 = Heater(room_1, [32, 33, 34, 35, 36])
-            heater_2_1 = Heater(room_2, [76, 91])
-            heater_2_2 = Heater(room_2, [27, 28, 29])
-            heater_2_2 = Heater(room_2, [136, 151, 166, 181])
-            heater_2_3 = Heater(room_2, [24, 25, 26])
-            heater_3_1 = Heater(room_3, [41, 42, 43, 44, 45])
+            heater_1_1 = Heater(room_1, [323, 348], self.default_heater_mode)
+            heater_1_2 = Heater(room_1, [48, 73, 98], self.default_heater_mode)
+            heater_1_3 = Heater(room_1, [32, 33, 34, 35, 36], self.default_heater_mode)
+            heater_2_1 = Heater(room_2, [76, 91], self.default_heater_mode)
+            heater_2_2 = Heater(room_2, [27, 28, 29], self.default_heater_mode)
+            heater_2_2 = Heater(room_2, [136, 151, 166, 181], self.default_heater_mode)
+            heater_2_3 = Heater(room_2, [24, 25, 26], self.default_heater_mode)
+            heater_3_1 = Heater(room_3, [41, 42, 43, 44, 45], self.default_heater_mode)
             self.heaters = [heater_1_1, heater_1_2, heater_1_3, heater_2_1, heater_2_2, heater_2_3, heater_3_1]
 
         elif heaters_mode == 'work':
-            heater_1_1 = Heater(room_1, [298, 323, 348])
-            heater_1_2 = Heater(room_1, [459, 460, 461])
-            heater_1_3 = Heater(room_1, [101, 126, 151])
-            heater_1_4 = Heater(room_1, [401, 426, 451])
-            heater_1_4 = Heater(room_1, [35, 36])
-            heater_2_1 = Heater(room_2, [106, 121])
-            heater_2_2 = Heater(room_2, [27, 28])
-            heater_2_3 = Heater(room_2, [277, 278, 279])
-            heater_2_4 = Heater(room_2, [163])
-            heater_3_1 = Heater(room_3, [53, 54, 55, 56, 57])
-            heater_3_2 = Heater(room_3, [75, 76])
-            heater_3_3 = Heater(room_3, [346, 347])
-            self.heaters = [heater_1_1, heater_1_2, heater_1_3, heater_1_4, heater_2_1, heater_2_2, heater_2_3, heater_2_4, heater_3_1, heater_3_2, heater_3_3]
+            heater_1_1 = Heater(room_1, [298, 323, 348], self.default_heater_mode)
+            heater_1_2 = Heater(room_1, [459, 460, 461], self.default_heater_mode)
+            heater_1_3 = Heater(room_1, [101, 126, 151], self.default_heater_mode)
+            heater_2_1 = Heater(room_2, [106, 121], self.default_heater_mode)
+            heater_2_3 = Heater(room_2, [277, 278, 279], self.default_heater_mode)
+            heater_2_4 = Heater(room_2, [163], self.default_heater_mode)
+            heater_3_1 = Heater(room_3, [55, 56, 57, 58, 59], self.default_heater_mode)
+            self.heaters = [heater_1_1, heater_1_2, heater_1_3, heater_2_1, heater_2_3, heater_2_4, heater_3_1]
 
         door_1 = Door(room_1, room_2, [399, 424], [240, 225]) 
         door_2 = Door(room_1, room_3, [3, 4], [363, 364])
@@ -231,7 +227,7 @@ class House:
                 if t == 50400:
                     heater.set_mode(self.heaters_during_work_mode)
                 elif t == 122400:
-                    heater.set_mode(3)
+                    heater.set_mode(self.default_heater_mode)
                 for heater in self.heaters:
                     if heater.get_neighboring_temperature(t) >= heater.max_temperature:
                         heater.on = False
